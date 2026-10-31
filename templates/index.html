@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="OBAZFARM AI crop disease detection">
+  <title>OBAZFARM | Crop Disease Detection</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#home"><i class="bi bi-flower1"></i><span>OBAZFARM</span></a>
+    <div class="sidebar-caption">WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <button class="side-link active" data-view="home" type="button"><i class="bi bi-house-door"></i><span>Home</span></button>
+      <button class="side-link" data-view="upload" type="button"><i class="bi bi-cloud-arrow-up"></i><span>Upload</span></button>
+    </nav>
+    <div class="sidebar-footer"><i class="bi bi-stars"></i><span>AI Crop Health Assistant</span></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn menu-toggle" id="menuToggle" aria-label="Toggle sidebar" type="button"><i class="bi bi-list"></i></button>
+        <span class="topbar-title">Crop Disease Detection</span>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <span class="admin-label"><i class="bi bi-person-circle"></i> Admin</span>
+        <button class="btn btn-sm logout-btn" id="logoutBtn" type="button"><i class="bi bi-box-arrow-right"></i> Logout</button>
+      </div>
+    </header>
+    <main class="main-content">
+      <section class="welcome" id="welcome">
+        <div class="eyebrow"><i class="bi bi-stars"></i> SMART FARMING SOLUTION</div>
+        <h1>Welcome to OBAZFARM</h1>
+        <p>Identify possible crop diseases with AI-powered image analysis and receive practical management recommendations.</p>
+      </section>
+      <section class="upload-card" aria-labelledby="uploadHeading">
+        <div class="card-heading">
+          <div><h2 id="uploadHeading">Upload Crop Leaf Image</h2><p>Choose a clear image showing the affected crop leaf.</p></div>
+          <span class="step-tag">STEP 01</span>
+        </div>
+    <form
+    id="uploadForm"
+    action="/diagnose"
+    method="POST"
+    enctype="multipart/form-data"
+>
+    <input
+        class="visually-hidden"
+        type="file"
+        id="leafImage"
+        name="file"
+        accept="image/jpeg,image/png,image/webp"
+        aria-describedby="fileHelp"
+        required
+    >
+
+    <div
+        class="upload-zone"
+        id="uploadZone"
+        tabindex="0"
+        role="button"
+        aria-label="Choose a crop leaf image"
+    >
+
+        <!-- Empty Preview -->
+        <div id="emptyPreview">
+            <div class="upload-icon">
+                <i class="bi bi-image"></i>
+            </div>
+
+            <strong>Click or drag an image here</strong>
+
+            <p id="fileHelp">
+                JPG, PNG or WEBP • Maximum 10 MB
+            </p>
+
+            <span class="choose-file">
+                Browse files
+            </span>
+        </div>
+
+        <!-- Image Preview -->
+        <div id="imagePreview" class="d-none">
+
+            <img
+                id="previewImage"
+                alt="Selected crop leaf"
+                class="img-fluid rounded"
+                style="max-height:300px;"
+            >
+
+            <p id="fileName" class="file-name"></p>
+
+            <span class="preview-hint">
+                Click to change image
+            </span>
+
+        </div>
+    </div>
+
+    <!-- Form Buttons -->
+    <div class="form-actions mt-3">
+
+        <button
+            type="button"
+            class="btn btn-outline-secondary"
+            id="clearBtn"
+        >
+            Clear
+        </button>
+
+        <button
+            type="submit"
+            class="btn analyze-btn"
+            id="analyzeBtn"
+        >
+            <i class="bi bi-stars"></i>
+            Analyze Crop Disease
+        </button>
+
+    </div>
+</form>
+
+<!-- Disease Analysis Result -->
+<div
+    id="resultContainer"
+    class="card mt-4 p-4 d-none"
+>
+    <h4>
+        <i class="bi bi-clipboard2-pulse"></i>
+        Crop Disease Analysis
+    </h4>
+
+    <div id="diagnosisResult"></div>
+</div>
+      </section>
+      <section class="result-card" aria-labelledby="resultHeading">
+        <div class="result-header"><div class="result-icon"><i class="bi bi-robot"></i></div><div><h2 id="resultHeading">AI Disease Analysis</h2><p>Results from your crop image</p></div><span class="status-tag" id="statusTag">Awaiting image</span></div>
+        <div class="result-content" id="resultContent" role="status" aria-live="polite"><div class="empty-result"><i class="bi bi-clipboard2-pulse"></i><p>Your analysis will appear here after you upload a leaf image.</p></div></div>
+        <p class="disclaimer"><i class="bi bi-info-circle"></i> AI analysis is preliminary. Confirm uncertain diagnoses with an agricultural extension specialist before treatment.</p>
+      </section>
+      <footer>© 2026 OBAZFARM · AI-Powered Agriculture</footer>
+    </main>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../static/js/script.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("uploadForm");
+    const fileInput = document.getElementById("leafImage");
+    const uploadZone = document.getElementById("uploadZone");
+
+    const emptyPreview = document.getElementById("emptyPreview");
+    const imagePreview = document.getElementById("imagePreview");
+    const previewImage = document.getElementById("previewImage");
+    const fileName = document.getElementById("fileName");
+
+    const clearBtn = document.getElementById("clearBtn");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+
+    const resultContainer = document.getElementById("resultContainer");
+    const resultDiv = document.getElementById("diagnosisResult");
+
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    const maxSize = 10 * 1024 * 1024;
+
+    let previewUrl = null;
+
+    // Open file selector
+    uploadZone.addEventListener("click", function () {
+        fileInput.click();
+    });
+
+    // Keyboard accessibility
+    uploadZone.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileInput.click();
+        }
+    });
+
+    // Validate and preview selected image
+    function showPreview(file) {
+
+        if (!file) return;
+
+        if (!allowedTypes.includes(file.type)) {
+            alert("Please upload JPG, PNG or WEBP images only.");
+            return false;
+        }
+
+        if (file.size > maxSize) {
+            alert("Image must not exceed 10 MB.");
+            return false;
+        }
+
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+        }
+
+        previewUrl = URL.createObjectURL(file);
+
+        previewImage.src = previewUrl;
+        fileName.textContent = file.name;
+
+        emptyPreview.classList.add("d-none");
+        imagePreview.classList.remove("d-none");
+
+        resultContainer.classList.add("d-none");
+
+        return true;
+    }
+
+    // Handle file selection
+    fileInput.addEventListener("change", function () {
+
+        const file = fileInput.files[0];
+
+        if (!showPreview(file)) {
+            fileInput.value = "";
+        }
+    });
+
+    // Drag and drop
+    uploadZone.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        uploadZone.classList.add("dragover");
+    });
+
+    uploadZone.addEventListener("dragleave", function () {
+        uploadZone.classList.remove("dragover");
+    });
+
+    uploadZone.addEventListener("drop", function (event) {
+
+        event.preventDefault();
+
+        uploadZone.classList.remove("dragover");
+
+        const file = event.dataTransfer.files[0];
+
+        if (!file || !allowedTypes.includes(file.type)
+            || file.size > maxSize) {
+            alert("Select a JPG, PNG or WEBP image under 10 MB.");
+            return;
+        }
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+
+        fileInput.files = dataTransfer.files;
+
+        showPreview(file);
+    });
+
+    // Clear image and result
+    clearBtn.addEventListener("click", function () {
+
+        form.reset();
+
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+        }
+
+        previewImage.removeAttribute("src");
+        fileName.textContent = "";
+
+        emptyPreview.classList.remove("d-none");
+        imagePreview.classList.add("d-none");
+
+        resultContainer.classList.add("d-none");
+        resultDiv.replaceChildren();
+    });
+
+    // Display result field
+    function addField(title, value) {
+
+        const heading = document.createElement("h5");
+        heading.className = "mt-3";
+        heading.textContent = title;
+
+        const content = document.createElement("p");
+        content.style.whiteSpace = "pre-line";
+
+        content.textContent = Array.isArray(value)
+            ? value.map(item => "• " + item).join("\n")
+            : (value || "Not determined");
+
+        resultDiv.append(heading, content);
+    }
+
+    // Submit image to FastAPI
+    form.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert("Please upload a plant leaf image.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        resultContainer.classList.remove("d-none");
+        resultDiv.textContent = "Analyzing crop disease...";
+
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML =
+            '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+
+        try {
+
+            const response = await fetch("/diagnose", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "Analysis failed");
+            }
+
+            const result = data.result;
+
+            resultDiv.replaceChildren();
+
+            addField("Plant Name", result.plant);
+            addField("Disease", result.disease);
+            addField("Causative Organism", result.cause);
+            addField("Symptoms", result.symptoms);
+            addField("Recommended Treatment", result.treatment);
+            addField("Prevention", result.prevention);
+            addField("Diagnostic Confidence", result.confidence_note);
+
+        } catch (error) {
+
+            resultDiv.textContent =
+                "Error: " + error.message;
+
+        } finally {
+
+            analyzeBtn.disabled = false;
+
+            analyzeBtn.innerHTML =
+                '<i class="bi bi-stars"></i> Analyze Crop Disease';
+        }
+    });
+
+});
+</script>
+</body>
+</html>
